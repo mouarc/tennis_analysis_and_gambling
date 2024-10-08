@@ -1,0 +1,32 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "tennis_analysis_and_gambling"
+version = "0.0.1"
+description = "This project's goal is to study betting odds from past ATP and WTA tennis matches"
+authors = [
+  { name = "Marc Abel\u00e9" },
+]
+
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    
+]
+requires-python = "~=3.12"
+
+[tool.black]
+line-length = 99
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+)/
+'''
+
+[tool.ruff.lint.isort]
+known_first_party = ["tennis_analysis_and_gambling"]
+force_sort_within_sections = true
