@@ -6,12 +6,14 @@ from unittest.mock import MagicMock
 from unittest.mock import mock_open
 from unittest.mock import patch
 
+import pandas as pd
 from selenium.common.exceptions import InvalidArgumentException
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from tennis_analysis_and_gambling.config import ATP_FILES_DIR
 from tennis_analysis_and_gambling.config import URL_HISTORY_FILES
 from tennis_analysis_and_gambling.config import WTA_FILES_DIR
+from tennis_analysis_and_gambling.utils import concat_history_files
 from tennis_analysis_and_gambling.utils import fetch_history_file
 from tennis_analysis_and_gambling.utils import save_file_from_url
 from tennis_analysis_and_gambling.utils import set_driver
@@ -89,3 +91,11 @@ class TestUtils(unittest.TestCase):
         )
         mock_makedirs.assert_called_once_with(WTA_FILES_DIR, exist_ok=True)
         self.assertTrue("2023.xlsx" in mock_element.get_attribute.return_value)
+
+    def test_concat_history_files(self):
+        df = concat_history_files(atp_or_wta="atp", files_path="tests/data_test")
+        self.assertIsInstance(df, pd.DataFrame)
+
+    def test_concat_history_files_fail(self):
+        with self.assertRaises(ValueError):
+            concat_history_files(atp_or_wta="wrong", files_path=None)

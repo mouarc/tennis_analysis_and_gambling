@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from os import listdir
 from os import makedirs
 from os import path
 
+import pandas as pd
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -78,3 +80,22 @@ def fetch_history_file(year: int, atp_or_wta: str) -> None:
             raise FileNotFoundError(f"No file found for {atp_or_wta} {year}")
     finally:
         driver.quit()
+
+
+def concat_history_files(atp_or_wta: str, files_path: str = None) -> pd.DataFrame:
+    if not files_path:
+        if atp_or_wta.lower() == "atp":
+            files_path = ATP_FILES_DIR
+        elif atp_or_wta.lower() == "wta":
+            files_path = WTA_FILES_DIR
+        else:
+            raise ValueError(f"{atp_or_wta} not valid. Please select 'ATP' or 'WTA'.")
+    history_files = listdir(files_path)
+    df_history = pd.DataFrame()
+
+    for file in history_files:
+        if file.endswith(".xls") or file.endswith(".xlsx"):
+            file_path = path.join(files_path, file)
+            df_tmp = pd.read_excel(file_path)
+            df_history = pd.concat([df_history, df_tmp])
+    return df_history
