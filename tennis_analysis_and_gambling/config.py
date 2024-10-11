@@ -5,6 +5,7 @@ URL_HISTORY_FILES = "http://www.tennis-data.co.uk/alldata.php"
 FILES_XPATH = "/html/body/table[5]/tbody/tr[2]/td[3]/"
 ATP_FILES_DIR = "data/external/atp"
 WTA_FILES_DIR = "data/external/wta"
+ATP_START_YEAR = 2000
 FILES_DIR = "data/"
 
 FORMAT_DATE = "%Y-%m-%d"

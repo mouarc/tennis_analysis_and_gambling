@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from tennis_analysis_and_gambling.config import ATP_FILES_DIR
+from tennis_analysis_and_gambling.config import ATP_START_YEAR
 from tennis_analysis_and_gambling.config import FILES_XPATH
 from tennis_analysis_and_gambling.config import URL_HISTORY_FILES
 from tennis_analysis_and_gambling.config import WTA_FILES_DIR
@@ -39,6 +40,8 @@ def save_file_from_url(file_url: str, file_name: str):
 def fetch_history_file(year: int, atp_or_wta: str) -> None:
 
     current_year = datetime.now().year
+    atp_suffix = current_year - year + 1
+    wta_suffix = atp_suffix + current_year - ATP_START_YEAR + 1
 
     if atp_or_wta.lower() == "atp":
         # xpath is built as follow: "/html/body/table[5]/tbody/tr[2]/td[3]/[_suffix_]"
@@ -46,11 +49,11 @@ def fetch_history_file(year: int, atp_or_wta: str) -> None:
         # WTA history files follow the last ATP history file
         # e.g.: if current year is 2027, 2027 ATP file' suffix will be 1,
         # 2000 ATP file' suffix will be 28
-        # and first WTA file' suffix wille be 29
-        suffix = current_year - year + 1
+        # and 2027 WTA file' suffix wille be 29
         data_dir = ATP_FILES_DIR
+        suffix = atp_suffix
     elif atp_or_wta.lower() == "wta":
-        suffix = current_year - 2000
+        suffix = wta_suffix
         data_dir = WTA_FILES_DIR
     else:
         raise ValueError(f"{atp_or_wta} not correct. Please select 'ATP' or 'WTA'")

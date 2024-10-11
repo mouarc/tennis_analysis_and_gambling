@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 from tennis_analysis_and_gambling.config import ATP_FILES_DIR
 from tennis_analysis_and_gambling.config import URL_HISTORY_FILES
+from tennis_analysis_and_gambling.config import WTA_FILES_DIR
 from tennis_analysis_and_gambling.utils import fetch_history_file
 from tennis_analysis_and_gambling.utils import save_file_from_url
 from tennis_analysis_and_gambling.utils import set_driver
@@ -67,4 +68,24 @@ class TestUtils(unittest.TestCase):
             file_url="http://www.tennis-data.co.uk/2023/2023.xlsx", file_name=expected_file_name
         )
         mock_makedirs.assert_called_once_with(ATP_FILES_DIR, exist_ok=True)
+        self.assertTrue("2023.xlsx" in mock_element.get_attribute.return_value)
+
+    @patch("tennis_analysis_and_gambling.utils.makedirs")
+    @patch("tennis_analysis_and_gambling.utils.save_file_from_url")
+    @patch("selenium.webdriver.support.ui.WebDriverWait")
+    def test_fetch_history_file_wta(self, mock_wait, mock_save_file, mock_makedirs):
+        year = 2023
+        mock_element = MagicMock()
+        mock_element.text = f"{year}"
+        mock_element.get_attribute.return_value = "2023w/2023.xlsx"
+        mock_wait.return_value.until.return_value = mock_element
+
+        atp_or_wta = "wta"
+        fetch_history_file(year, atp_or_wta)
+
+        expected_file_name = path.join(WTA_FILES_DIR, f"{atp_or_wta}_2023.xlsx")
+        mock_save_file.assert_called_once_with(
+            file_url="http://www.tennis-data.co.uk/2023w/2023.xlsx", file_name=expected_file_name
+        )
+        mock_makedirs.assert_called_once_with(WTA_FILES_DIR, exist_ok=True)
         self.assertTrue("2023.xlsx" in mock_element.get_attribute.return_value)
