@@ -18,7 +18,7 @@ ATP_SERIES_TO_RENAME = {
     "International": "ATP250",
 }
 
-COLS_SCORE = [
+NUMERIC_COLS = [
     "W1",
     "L1",
     "W2",
@@ -31,4 +31,11 @@ COLS_SCORE = [
     "L5",
     "Wsets",
     "Lsets",
+    "WRank",
+    "LRank",
+]
+
+RANK_COLS = [
+    "WRank",
+    "LRank",
 ]

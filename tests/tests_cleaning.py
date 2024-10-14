@@ -5,7 +5,8 @@ import unittest
 import pandas as pd
 
 from tennis_analysis_and_gambling.cleaning import clean_atp
-from tennis_analysis_and_gambling.cleaning import ensure_cols_score_dtype
+from tennis_analysis_and_gambling.cleaning import ensure_cols_dtype
+from tennis_analysis_and_gambling.config import ATP_SERIES_TO_RENAME
 
 
 class TestCleaning(unittest.TestCase):
@@ -24,15 +25,21 @@ class TestCleaning(unittest.TestCase):
         self.df_test_atp = pd.DataFrame(data=data_atp)
 
     def test_ensure_dtypes(self):
-        df_test_dtypes = ensure_cols_score_dtype(
+        df_test_dtypes = ensure_cols_dtype(
             df=pd.DataFrame(data=self.df_test_atp),
-            cols_score=["col1", "col2"],
+            cols=["col1", "col2"],
+            dtype="float",
         )
         self.assertEqual(df_test_dtypes["col1"].dtype, "float64")
         self.assertEqual(df_test_dtypes["col2"].dtype, "float64")
 
     def test_clean_atp(self):
-        df_cleaned = clean_atp(self.df_test_atp, max_nb_sets=3, cols_score=["col1", "col2"])
+        df_cleaned = clean_atp(
+            df=self.df_test_atp,
+            max_nb_sets=3,
+            series_to_rename=ATP_SERIES_TO_RENAME,
+            cols_to_correct=["col1", "col2"],
+        )
 
         self.assertTrue((df_cleaned["Best of"] == 3).all())
         self.assertTrue((df_cleaned["Comment"] == "Completed").all())
