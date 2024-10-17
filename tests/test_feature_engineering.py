@@ -7,6 +7,7 @@ import pandas as pd
 
 from tennis_analysis_and_gambling.feature_engineering import add_feaures_odds_ranks
 from tennis_analysis_and_gambling.feature_engineering import add_targets
+from tennis_analysis_and_gambling.feature_engineering import calculate_elo_ranking
 
 
 class TestFeatureEngineering(unittest.TestCase):
@@ -16,8 +17,8 @@ class TestFeatureEngineering(unittest.TestCase):
             "Comment": ["Completed", "Completed", "Completed", "Walkover"],
             "Best of": [3, 3, 5, 3],
             "Date": ["2023-01-10", "2023-01-12", "2023-01-15", "2023-01-18"],
-            "Winner": [" Player A ", "Player B", " Player C ", "Player D"],
-            "Loser": [" Player W", " Player X", "Player Y", " Player Z "],
+            "Winner": ["Player A", "Player B", "Player C", "Player C"],
+            "Loser": ["Player B", "Player C", "Player B", "Player A"],
             "Series": ["International Gold", "Masters", "Grand Slam", "ATP250"],
             "W1": [6, 6, 6, 3],
             "L1": [2, 4, 0, 6],
@@ -66,3 +67,18 @@ class TestFeatureEngineering(unittest.TestCase):
         pd.testing.assert_series_equal(df_targets["BothScore"], expected_both_score)
         pd.testing.assert_series_equal(df_targets["FavOddWin"], expected_fav_odd_win)
         pd.testing.assert_series_equal(df_targets["FavRankWin"], expected_fav_rank_win)
+
+    def test_calculate_elo(self):
+        winner = "Player A"
+        loser = "Player B"
+        elo_dict = {
+            "Player A": 1500,
+            "Player B": 1500,
+        }
+        expected_new_elo_winner = 1516
+        expected_new_elo_loser = 1484
+        new_elo_rank_winner, new_elo_rank_loser = calculate_elo_ranking(
+            winner=winner, loser=loser, elo_dict=elo_dict
+        )
+        self.assertEqual(new_elo_rank_winner, expected_new_elo_winner)
+        self.assertEqual(new_elo_rank_loser, expected_new_elo_loser)
