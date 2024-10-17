@@ -39,3 +39,40 @@ RANK_COLS = [
     "WRank",
     "LRank",
 ]
+
+ATP_SCORE_COLS = [
+    "W1",
+    "L1",
+    "W2",
+    "L2",
+    "W3",
+    "L3",
+    "W4",
+    "L4",
+    "W5",
+    "L5",
+]
+
+WTA_SCORE_COLS = [
+    "W1",
+    "L1",
+    "W2",
+    "L2",
+    "W3",
+    "L3",
+]
+
+SETS_COLS = [
+    "Wsets",
+    "Lsets",
+]
+
+ODDS_COLS = [
+    "B365W",
+    "B365L",
+]
+
+RANK_COLS = [
+    "WRank",
+    "LRank",
+]
