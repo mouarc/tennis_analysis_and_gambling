@@ -55,7 +55,7 @@ def update_elo_rank(df: pd.DataFrame, initial_elo: int = 1500) -> pd.DataFrame:
 
         df.loc[index, "elo_Winner"] = elo_winner
         df.loc[index, "elo_Loser"] = elo_loser
-        return df
+    return df
 
 
 def calculate_elo_ranking(winner: str, loser: str, elo_dict: dict, k_factor: int = 32):
