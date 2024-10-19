@@ -22,6 +22,21 @@ from tennis_analysis_and_gambling.config import WTA_FILES_DIR
 
 
 def set_driver(url: str) -> WebDriver:
+    """
+    Configures and launches a Chrome WebDriver with specific options to open a given URL.
+
+    Args:
+        url (str): The URL that the browser will navigate to after launching the driver.
+
+    Returns:
+        WebDriver: A configured instance of the Chrome WebDriver.
+
+    The driver is launched with the following options:
+        - "--no-sandbox": Disables the use of the sandbox, commonly used in environments without a user interface.
+        - "--headless": Runs the browser in headless mode (without a graphical interface), useful for server environments.
+        - "--remote-debugging-port=9222": Opens a port for remote debugging.
+        - "--disable-gpu": Disables GPU usage, useful in environments without GPU access.
+    """
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
@@ -40,6 +55,19 @@ def save_file_from_url(file_url: str, file_name: str):
 
 
 def fetch_history_file(year: int, atp_or_wta: str) -> None:
+    """
+    Downloads and saves an ATP or WTA tennis match history file (in XLS format) for a specified year from
+    http://www.tennis-data.co.uk/alldata.php.
+
+    Args:
+        year (int): The year for which you want to download the history file
+        atp_or_wta (str): Either "ATP" for men's tennis matches or "WTA" for women's tennis matches
+
+    Raises:
+        ValueError: If the atp_or_wta argument is not correctly set to "ATP" or "WTA".
+        FileNotFoundError: If the file is not found. This can happen if the specified year does not exist
+        in the history files available on the website.
+    """
 
     current_year = datetime.now().year
     atp_suffix = current_year - year + 1
@@ -83,6 +111,26 @@ def fetch_history_file(year: int, atp_or_wta: str) -> None:
 
 
 def concat_history_files(atp_or_wta: str, files_path: str = None) -> pd.DataFrame:
+    """
+    Concatenates all ATP or WTA history files from a specified directory into a single DataFrame.
+
+    Args:
+        atp_or_wta (str): Specifies whether to concatenate ATP or WTA files. Must be either "ATP" for men's tennis matches
+                          or "WTA" for women's tennis matches.
+        files_path (str, optional): The path to the directory containing the history files. Defaults to None,
+                                    in which case the function will use ATP_FILES_DIR for ATP or WTA_FILES_DIR for WTA.
+
+    Raises:
+        ValueError: If atp_or_wta is not "ATP" or "WTA", a ValueError is raised.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the concatenated data from all ATP or WTA history files.
+
+    Notes:
+        - The function scans the specified directory for files with the ".xls" or ".xlsx" extensions.
+        - It reads each file into a temporary DataFrame using `pd.read_excel()` and concatenates them into a single DataFrame.
+        - If `files_path` is not provided, the function defaults to predefined directories for ATP or WTA data.
+    """
     if not files_path:
         if atp_or_wta.lower() == "atp":
             files_path = ATP_FILES_DIR
