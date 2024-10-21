@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from tennis_analysis_and_gambling.feature_engineering import add_feaures_odds_ranks
+from tennis_analysis_and_gambling.feature_engineering import add_features_odds_ranks
 from tennis_analysis_and_gambling.feature_engineering import add_targets
 from tennis_analysis_and_gambling.feature_engineering import calculate_elo_ranking
 
@@ -40,7 +40,7 @@ class TestFeatureEngineering(unittest.TestCase):
         self.df_test_atp = pd.DataFrame(data=data_atp)
 
     def test_add_features_odds_ranks(self):
-        df_featured = add_feaures_odds_ranks(self.df_test_atp)
+        df_featured = add_features_odds_ranks(self.df_test_atp)
 
         expected_sumodd_col = pd.Series([6.1, 3.8, 3.75, 3.9], name="SumOdd")
         expected_gapodd_col = pd.Series([3.9, 0.8, 0.75, 1.1], name="GapOdd")

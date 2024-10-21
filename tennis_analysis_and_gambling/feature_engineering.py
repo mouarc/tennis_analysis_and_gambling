@@ -9,7 +9,7 @@ from tennis_analysis_and_gambling.config import SETS_COLS
 from tennis_analysis_and_gambling.config import WTA_SCORE_COLS
 
 
-def add_feaures_odds_ranks(df: pd.DataFrame):
+def add_features_odds_ranks(df: pd.DataFrame):
     """
     Adds new features related to betting odds and player rankings to the given DataFrame.
 
