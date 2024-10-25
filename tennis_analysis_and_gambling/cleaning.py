@@ -29,6 +29,7 @@ def clean_atp(
     The cleaning process includes:
         - Filtering for completed matches only.
         - Filtering matches by the maximum number of sets (e.g., best of 3 or 5).
+        - Removing odds that are less than 1.
         - Standardizing date format and stripping whitespace from "Winner" and "Loser" columns.
         - Renaming "Series" values based on the provided dictionary.
         - Ensuring that specified columns are of type float.
@@ -41,6 +42,7 @@ def clean_atp(
 
     df = df[df["Comment"] == "Completed"]  # keep only completed games
     df = df[df["Best of"] == max_nb_sets]
+    df = df[(df["B365W"] >= 1) & (df["B365L"] >= 1)]  # odds can't be less than 1
     df["Date"] = pd.to_datetime(df["Date"])
     df["Winner"] = df["Winner"].apply(lambda x: x.strip())
     df["Loser"] = df["Loser"].apply(lambda x: x.strip())
