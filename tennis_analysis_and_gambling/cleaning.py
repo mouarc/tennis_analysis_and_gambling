@@ -9,7 +9,6 @@ from tennis_analysis_and_gambling.config import NUMERIC_COLS
 
 def clean_atp(
     df: pd.DataFrame,
-    max_nb_sets: int,
     series_to_rename: dict = ATP_SERIES_TO_RENAME,
     cols_to_correct: list = NUMERIC_COLS,
 ) -> pd.DataFrame:
@@ -41,8 +40,8 @@ def clean_atp(
     """
 
     df = df[df["Comment"] == "Completed"]  # keep only completed games
-    df = df[df["Best of"] == max_nb_sets]
     df = df[(df["B365W"] >= 1) & (df["B365L"] >= 1)]  # odds can't be less than 1
+    df = df[~df["Best of"].isnull()]  # Delete rows where 'Best of' is null
     df["Date"] = pd.to_datetime(df["Date"])
     df["Winner"] = df["Winner"].apply(lambda x: x.strip())
     df["Loser"] = df["Loser"].apply(lambda x: x.strip())
