@@ -19,3 +19,20 @@ def surface_repartition_figure(df: pd.DataFrame):
         title="Number of matches per surface per year",
     )
     return fig
+
+
+def favorite_victory_percentage_figure(df: pd.DataFrame):
+    df["Victory"] = df.apply(
+        lambda row: "Favorite_Victory" if row["B365W"] < row["B365L"] else "Outsider_Victory",
+        axis=1,
+    )
+    # favorite_victory = len(df[df["B365W"]<df["B365L"]])
+    fig = px.pie(
+        df,
+        names="Victory",
+        color_discrete_map=COLORS_MAPPING,
+        hole=0.4,
+        title="Victories repartition",
+    )
+    fig.update_traces(textposition="inside", textinfo="percent+label")
+    return fig

@@ -7,12 +7,11 @@ from os import listdir
 import pandas as pd
 import streamlit as st
 
-from tennis_analysis_and_gambling.app.main_views import (
-    surface_repartition_figure,
-)
-from tennis_analysis_and_gambling.cleaning import (
-    clean_atp,
-)
+from tennis_analysis_and_gambling.app.main_views import favorite_victory_percentage_figure
+from tennis_analysis_and_gambling.app.main_views import surface_repartition_figure
+from tennis_analysis_and_gambling.app.sidebar import filter_dataframe
+from tennis_analysis_and_gambling.app.sidebar import sidebar
+from tennis_analysis_and_gambling.cleaning import clean_atp
 from tennis_analysis_and_gambling.config import ATP_FILES_DIR
 from tennis_analysis_and_gambling.config import ATP_START_YEAR
 from tennis_analysis_and_gambling.config import MAIN_ATP_COLS
@@ -20,9 +19,10 @@ from tennis_analysis_and_gambling.config import WTA_FILES_DIR
 from tennis_analysis_and_gambling.utils import concat_history_files
 from tennis_analysis_and_gambling.utils import fetch_history_file
 
-
 current_year = datetime.now().year
 atp_history_years = range(ATP_START_YEAR, current_year + 1)
+
+st.set_page_config(layout="wide", page_title="Home")
 
 
 def check_files_presence(year: int, atp_or_wta: str, update_current_year: bool) -> None:
@@ -44,10 +44,11 @@ def check_files_presence(year: int, atp_or_wta: str, update_current_year: bool) 
         fetch_history_file(year=current_year, atp_or_wta=atp_or_wta)
 
 
+@st.cache_data
 def prepare_dataset(atp_or_wta: str) -> pd.DataFrame:
     history_df = concat_history_files(atp_or_wta=atp_or_wta)
     history_df = clean_atp(history_df)
-    return history_df[MAIN_ATP_COLS].sort_values("Date").reset_index(drop=True)
+    return history_df[MAIN_ATP_COLS].sort_values("Date", ascending=False).reset_index(drop=True)
 
 
 def main(atp_or_wta: str, update_current_year: bool):
@@ -56,9 +57,22 @@ def main(atp_or_wta: str, update_current_year: bool):
             year=year, atp_or_wta=atp_or_wta, update_current_year=update_current_year
         )
     df = prepare_dataset(atp_or_wta=atp_or_wta)
-    st.dataframe(df)
-    fig_surface_rep = surface_repartition_figure(df=df)
-    st.plotly_chart(fig_surface_rep)
+
+    if "history_original" not in st.session_state:
+        st.session_state["history_original"] = df
+    st.session_state["history"] = filter_dataframe(st.session_state["history_original"])
+
+    st.dataframe(st.session_state["history"], hide_index=True)
+    fig_surface_rep = surface_repartition_figure(df=st.session_state["history"])
+    fig_victory_rep = favorite_victory_percentage_figure(df=st.session_state["history"])
+    col_chart_1, col_chart_2 = st.columns(2)
+    with col_chart_1:
+        st.plotly_chart(fig_surface_rep, on_select="rerun")
+    with col_chart_2:
+        st.plotly_chart(fig_victory_rep)
+
+    st.session_state["players"] = pd.concat([df["Winner"], df["Loser"]]).unique()
+    sidebar()
 
 
 if __name__ == "__main__":
