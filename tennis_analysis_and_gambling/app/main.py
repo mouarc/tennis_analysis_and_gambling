@@ -16,6 +16,7 @@ from tennis_analysis_and_gambling.config import ATP_START_YEAR
 from tennis_analysis_and_gambling.config import MAIN_ATP_COLS
 from tennis_analysis_and_gambling.config import MAIN_WTA_COLS
 from tennis_analysis_and_gambling.config import WTA_FILES_DIR
+from tennis_analysis_and_gambling.config import WTA_START_YEAR
 from tennis_analysis_and_gambling.utils import concat_history_files
 from tennis_analysis_and_gambling.utils import fetch_history_file
 
@@ -61,16 +62,19 @@ def prepare_dataset(atp_or_wta: str) -> pd.DataFrame:
 
 def set_history_session_state(df: pd.DataFrame, atp_or_wta: str):
     history_original_name = f"{atp_or_wta}_history_original"
-    if atp_or_wta.lower() == "atp":
-        if history_original_name not in st.session_state:
-            st.session_state[history_original_name] = df
-        st.session_state[f"{atp_or_wta}_history"] = filter_dataframe(
-            st.session_state[history_original_name]
-        )
+    if history_original_name not in st.session_state:
+        st.session_state[history_original_name] = df
+    st.session_state[f"{atp_or_wta}_history"] = filter_dataframe(
+        st.session_state[history_original_name]
+    )
 
 
 def pack_history(atp_or_wta: str, update_current_year: bool):
-    for year in range(ATP_START_YEAR, current_year + 1):
+    if atp_or_wta.lower() == "atp":
+        start_year = ATP_START_YEAR
+    elif atp_or_wta.lower() == "wta":
+        start_year = WTA_START_YEAR
+    for year in range(start_year, current_year + 1):
         check_files_presence(
             year=year, atp_or_wta=atp_or_wta, update_current_year=update_current_year
         )
