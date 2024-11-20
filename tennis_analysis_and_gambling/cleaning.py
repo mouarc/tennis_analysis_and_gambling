@@ -5,11 +5,12 @@ import pandas as pd
 
 from tennis_analysis_and_gambling.config import ATP_SERIES_TO_RENAME
 from tennis_analysis_and_gambling.config import NUMERIC_COLS
+from tennis_analysis_and_gambling.config import WTA_SERIES_TO_RENAME
 
 
-def clean_atp(
+def clean_history(
     df: pd.DataFrame,
-    series_to_rename: dict = ATP_SERIES_TO_RENAME,
+    atp_or_wta: str,
     cols_to_correct: list = NUMERIC_COLS,
 ) -> pd.DataFrame:
     """
@@ -47,12 +48,28 @@ def clean_atp(
     df["Loser"] = df["Loser"].apply(lambda x: x.strip())
 
     # Series old names are changed to standardize
-    # See https://en.wikipedia.org/wiki/ATP_Tour for more details
-    df["Series"] = df["Series"].replace(series_to_rename)
+    # See https://en.wikipedia.org/wiki/ATP_Tour and https://en.wikipedia.org/wiki/WTA_Tour for more details
+    if atp_or_wta.lower() == "atp":
+        df["Series"] = df["Series"].replace(ATP_SERIES_TO_RENAME)
+    elif atp_or_wta.lower() == "wta":
+        df["Tier"] = df["Tier"].replace(WTA_SERIES_TO_RENAME)
+        df["Tier"] = df["Tier"].apply(tier_correction)
     df = ensure_cols_dtype(df=df, cols=cols_to_correct, dtype="float")
     df.drop_duplicates(inplace=True)
     df.reset_index(drop=True, inplace=True)
     return df
+
+
+def tier_correction(tier):
+    if tier.startswith("WTA") and tier not in [
+        "WTA250",
+        "WTA500",
+        "WTA Grand Slam",
+        "WTA1000",
+        "WTA Finals",
+    ]:
+        return "WTA250"
+    return tier
 
 
 def ensure_cols_dtype(df: pd.DataFrame, cols: list, dtype: str) -> pd.DataFrame:
