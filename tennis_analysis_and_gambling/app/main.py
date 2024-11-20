@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from argparse import ArgumentParser
 from datetime import datetime
 from os import listdir
 
@@ -11,10 +10,11 @@ from tennis_analysis_and_gambling.app.main_views import favorite_victory_percent
 from tennis_analysis_and_gambling.app.main_views import surface_repartition_figure
 from tennis_analysis_and_gambling.app.sidebar import filter_dataframe
 from tennis_analysis_and_gambling.app.sidebar import sidebar
-from tennis_analysis_and_gambling.cleaning import clean_atp
+from tennis_analysis_and_gambling.cleaning import clean_history
 from tennis_analysis_and_gambling.config import ATP_FILES_DIR
 from tennis_analysis_and_gambling.config import ATP_START_YEAR
 from tennis_analysis_and_gambling.config import MAIN_ATP_COLS
+from tennis_analysis_and_gambling.config import MAIN_WTA_COLS
 from tennis_analysis_and_gambling.config import WTA_FILES_DIR
 from tennis_analysis_and_gambling.utils import concat_history_files
 from tennis_analysis_and_gambling.utils import fetch_history_file
@@ -47,43 +47,62 @@ def check_files_presence(year: int, atp_or_wta: str, update_current_year: bool) 
 @st.cache_data
 def prepare_dataset(atp_or_wta: str) -> pd.DataFrame:
     history_df = concat_history_files(atp_or_wta=atp_or_wta)
-    history_df = clean_atp(history_df)
-    return history_df[MAIN_ATP_COLS].sort_values("Date", ascending=False).reset_index(drop=True)
+    if atp_or_wta.lower() == "atp":
+        history_df = clean_history(history_df, atp_or_wta=atp_or_wta)
+        return (
+            history_df[MAIN_ATP_COLS].sort_values("Date", ascending=False).reset_index(drop=True)
+        )
+    elif atp_or_wta.lower() == "wra":
+        history_df = clean_history(history_df, atp_or_wta=atp_or_wta)
+        return (
+            history_df[MAIN_WTA_COLS].sort_values("Date", ascending=False).reset_index(drop=True)
+        )
 
 
-def main(atp_or_wta: str, update_current_year: bool):
+def set_history_session_state(df: pd.DataFrame, atp_or_wta: str):
+    history_original_name = f"{atp_or_wta}_history_original"
+    if atp_or_wta.lower() == "atp":
+        if history_original_name not in st.session_state:
+            st.session_state[history_original_name] = df
+        st.session_state[f"{atp_or_wta}_history"] = filter_dataframe(
+            st.session_state[history_original_name]
+        )
+
+
+def pack_history(atp_or_wta: str, update_current_year: bool):
     for year in range(ATP_START_YEAR, current_year + 1):
         check_files_presence(
             year=year, atp_or_wta=atp_or_wta, update_current_year=update_current_year
         )
     df = prepare_dataset(atp_or_wta=atp_or_wta)
 
-    if "history_original" not in st.session_state:
-        st.session_state["history_original"] = df
-    st.session_state["history"] = filter_dataframe(st.session_state["history_original"])
+    set_history_session_state(df=df, atp_or_wta=atp_or_wta)
 
-    st.dataframe(st.session_state["history"], hide_index=True)
-    fig_surface_rep = surface_repartition_figure(df=st.session_state["history"])
-    fig_victory_rep = favorite_victory_percentage_figure(df=st.session_state["history"])
+    st.dataframe(st.session_state[f"{atp_or_wta}_history"], hide_index=True)
+    fig_surface_rep = surface_repartition_figure(df=st.session_state[f"{atp_or_wta}_history"])
+    fig_victory_rep = favorite_victory_percentage_figure(
+        df=st.session_state[f"{atp_or_wta}_history"]
+    )
     col_chart_1, col_chart_2 = st.columns(2)
     with col_chart_1:
-        st.plotly_chart(fig_surface_rep, on_select="rerun")
+        st.plotly_chart(fig_surface_rep)
     with col_chart_2:
         st.plotly_chart(fig_victory_rep)
 
     st.session_state["players"] = pd.concat([df["Winner"], df["Loser"]]).unique()
-    sidebar()
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument("circuit", help="Either ATP or WTA")
-    parser.add_argument(
-        "--update_current_year",
-        action="store_true",
-        help="Set this flag if you want to update the current year's results",
-    )
-    args = parser.parse_args()
-    st.title(f"{args.circuit} HISTORY")
-    with st.spinner(text="Reading history files..."):
-        main(args.circuit, args.update_current_year)
+    tab_atp, tab_wta = st.tabs(["ATP", "WTA"])
+
+    with tab_atp:
+        st.title("ATP HISTORY")
+        with st.spinner(text="Reading history files..."):
+            pack_history(atp_or_wta="atp", update_current_year=False)
+
+    with tab_wta:
+        st.title("WTA HISTORY")
+        with st.spinner(text="Reading history files..."):
+            pack_history(atp_or_wta="wta", update_current_year=False)
+
+    sidebar()
